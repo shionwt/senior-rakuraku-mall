@@ -14,130 +14,129 @@ type Item = {
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-const ProductCard = memo(
-  ({ item, index, rankingType }: { item: Item; index: number; rankingType: 'sales' | 'discount' }) => (
+const ProductCard = memo(({ item, index, rankingType }: { item: Item; index: number; rankingType: 'sales' | 'discount' }) => (
+  <div
+    style={{
+      backgroundColor: '#fff',
+      borderRadius: '20px',
+      border: '1px solid #e5e5e5',
+      padding: '18px',
+      marginBottom: '22px',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+      transition: 'transform 0.2s ease',
+      width: '100%',
+      maxWidth: '500px',
+      marginInline: 'auto',
+    }}
+  >
     <div
       style={{
-        backgroundColor: '#fff',
-        borderRadius: '20px',
-        border: '1px solid #e5e5e5',
-        padding: '18px',
-        marginBottom: '22px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-        transition: 'transform 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        flexWrap: 'wrap',
       }}
     >
+      {/* ランク番号 */}
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
+          fontSize: '20px',
+          fontWeight: 'bold',
+          color: '#E60012',
+          width: '28px',
+          textAlign: 'center',
         }}
       >
-        {/* ランク番号 */}
-        <div
+        {index + 1}
+      </div>
+
+      {/* 商品画像 */}
+      <img
+        src={item.mediumImageUrls?.[0]?.imageUrl?.replace('?ex=128x128', '') ?? ''}
+        alt={item.itemName}
+        loading="lazy"
+        style={{
+          borderRadius: '12px',
+          border: '1px solid #ccc',
+          width: '90px',
+          height: '90px',
+          objectFit: 'cover',
+          flexShrink: 0,
+        }}
+      />
+
+      {/* 商品情報 */}
+      <div style={{ flex: 1, minWidth: '200px' }}>
+        <h2
           style={{
-            fontSize: '22px',
+            fontSize: '17px',
             fontWeight: 'bold',
-            color: '#E60012',
-            width: '32px',
-            textAlign: 'center',
+            marginBottom: '6px',
+            lineHeight: '1.6em',
+            color: '#222',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}
         >
-          {index + 1}
-        </div>
+          {item.itemName}
+        </h2>
 
-        {/* 商品画像 */}
-        <img
-          src={item.mediumImageUrls?.[0]?.imageUrl?.replace('?ex=128x128', '') ?? ''}
-          alt={item.itemName}
-          loading="lazy"
-          style={{
-            borderRadius: '14px',
-            border: '1px solid #ccc',
-            width: '100px',
-            height: '100px',
-            objectFit: 'cover',
-            flexShrink: 0,
-          }}
-        />
-
-        {/* 商品情報 */}
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <h2
-            style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              marginBottom: '6px',
-              lineHeight: '1.6em',
-              color: '#222',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {item.itemName}
-          </h2>
-
-          {/* 価格 */}
-          <p style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>
-            {rankingType === 'discount' && item.discountRate && item.discountRate > 0 ? (
-              <>
-                <span style={{ color: '#E60012' }}>
-                  ¥{Number(item.itemPrice).toLocaleString()}
-                </span>
-                <span
-                  style={{
-                    textDecoration: 'line-through',
-                    color: '#777',
-                    fontSize: '15px',
-                    marginLeft: '6px',
-                  }}
-                >
-                  ¥{Number(item.regularPrice || item.itemPrice * 1.2).toLocaleString()}
-                </span>
-                <span style={{ color: '#E60012', fontSize: '15px', marginLeft: '6px' }}>
-                  （{item.discountRate}%OFF）
-                </span>
-              </>
-            ) : (
+        <p style={{ fontWeight: 'bold', fontSize: '19px', marginBottom: '10px' }}>
+          {rankingType === 'discount' && item.discountRate && item.discountRate > 0 ? (
+            <>
               <span style={{ color: '#E60012' }}>
                 ¥{Number(item.itemPrice).toLocaleString()}
               </span>
-            )}
-          </p>
+              <span
+                style={{
+                  textDecoration: 'line-through',
+                  color: '#777',
+                  fontSize: '14px',
+                  marginLeft: '6px',
+                }}
+              >
+                ¥{Number(item.regularPrice || item.itemPrice * 1.2).toLocaleString()}
+              </span>
+              <span style={{ color: '#E60012', fontSize: '14px', marginLeft: '6px' }}>
+                （{item.discountRate}%OFF）
+              </span>
+            </>
+          ) : (
+            <span style={{ color: '#E60012' }}>
+              ¥{Number(item.itemPrice).toLocaleString()}
+            </span>
+          )}
+        </p>
 
-          {/* ボタン */}
-          <a
-            href={item.affiliateUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'center',
-              padding: '12px 0',
-              backgroundColor: '#E60012',
-              color: '#fff',
-              borderRadius: '14px',
-              textDecoration: 'none',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(230,0,18,0.25)',
-              transition: 'transform 0.2s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
-          >
-            🛒 楽天で見る
-          </a>
-        </div>
+        <a
+          href={item.affiliateUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            width: '100%',
+            textAlign: 'center',
+            padding: '12px 0',
+            backgroundColor: '#E60012',
+            color: '#fff',
+            borderRadius: '14px',
+            textDecoration: 'none',
+            fontSize: '17px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 8px rgba(230,0,18,0.25)',
+            transition: 'transform 0.2s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
+        >
+          🛒 楽天で見る
+        </a>
       </div>
     </div>
-  )
-);
+  </div>
+));
 ProductCard.displayName = 'ProductCard';
 
 export default function Home() {
@@ -200,7 +199,7 @@ export default function Home() {
           padding: '16px 0',
           borderBottom: '2px solid #E60012',
           textAlign: 'center',
-          fontSize: '28px',
+          fontSize: '26px',
           fontWeight: 'bold',
           boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
         }}
@@ -217,6 +216,7 @@ export default function Home() {
           padding: '12px',
           background: '#fff',
           borderBottom: '1px solid #ddd',
+          flexWrap: 'wrap',
         }}
       >
         {['sales', 'discount'].map((t) => (
@@ -226,15 +226,13 @@ export default function Home() {
             style={{
               backgroundColor: rankingType === t ? '#E60012' : '#ccc',
               color: '#fff',
-              fontSize: '18px',
+              fontSize: '17px',
               padding: '10px 18px',
               borderRadius: '22px',
               border: 'none',
               cursor: 'pointer',
-              transition: 'transform 0.2s ease',
+              minWidth: '120px',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.08)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
           >
             {t === 'sales' ? '人気順' : '割引順'}
           </button>
@@ -260,16 +258,13 @@ export default function Home() {
               flexShrink: 0,
               backgroundColor: genreId === c.id ? '#E60012' : '#bbb',
               color: '#fff',
-              fontSize: '18px',
+              fontSize: '17px',
               fontWeight: 600,
               padding: '10px 18px',
               borderRadius: '22px',
               border: 'none',
               whiteSpace: 'nowrap',
-              transition: 'transform 0.2s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.08)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
           >
             {c.name}
           </button>
@@ -300,10 +295,7 @@ export default function Home() {
               border: 'none',
               fontWeight: 'bold',
               boxShadow: '0 4px 8px rgba(230,0,18,0.25)',
-              transition: 'transform 0.2s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.06)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
           >
             もっと見る
           </button>
