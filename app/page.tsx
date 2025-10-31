@@ -1,19 +1,48 @@
 'use client';
+export const dynamic = "force-dynamic";
+
 import { useState } from 'react';
+import useSWR from 'swr';
+import { fetchRakutenItems } from '@/lib/rakuten';
 
 export default function Home() {
   const mainCategories = ['家電', '食品', '健康食品', '飲料', '化粧品'];
 
-  const subCategories: Record<string, string[]> = {
-    '家電': ['健康家電', 'ラジオ', 'マッサージ器'],
-    '食品': ['冷凍弁当', '惣菜セット', '完全食'],
-    '健康食品': ['サプリ', '栄養ドリンク', 'グルコサミン'],
-    '飲料': ['お茶', '水', 'ジュース'],
-    '化粧品': ['育毛剤', 'シミケア', 'シワ対策'],
+  const subCategories: Record<string, { name: string; genreId: string }[]> = {
+    '家電': [
+      { name: '総合ランキング', genreId: '0' },
+      { name: '健康家電', genreId: '211742' },
+      { name: 'マッサージ器', genreId: '100316' },
+    ],
+    '食品': [
+      { name: '総合ランキング', genreId: '0' },
+      { name: 'サプリ', genreId: '551167' },
+      { name: '飲料', genreId: '100316' },
+    ],
+    '健康食品': [
+      { name: 'サプリメント', genreId: '551167' },
+      { name: '栄養ドリンク', genreId: '100671' },
+      { name: 'グルコサミン', genreId: '551170' },
+    ],
+    '飲料': [
+      { name: 'ドリンク総合', genreId: '100316' },
+      { name: 'お茶', genreId: '100317' },
+      { name: '水', genreId: '100319' },
+    ],
+    '化粧品': [
+      { name: '美容総合', genreId: '100939' },
+      { name: '育毛剤', genreId: '100939' },
+      { name: 'スキンケア', genreId: '100939' },
+    ],
   };
 
   const [selectedMain, setSelectedMain] = useState('家電');
-  const [selectedSub, setSelectedSub] = useState('健康家電');
+  const [selectedSub, setSelectedSub] = useState(subCategories['家電'][0]);
+
+  const { data, error, isLoading } = useSWR(
+    selectedSub ? ['rakuten', selectedSub.genreId] : null,
+    () => fetchRakutenItems(selectedSub.genreId)
+  );
 
   return (
     <div
@@ -24,6 +53,7 @@ export default function Home() {
         minHeight: '100vh',
       }}
     >
+      {/* ヘッダー */}
       <header
         style={{
           backgroundColor: '#fff',
@@ -67,7 +97,6 @@ export default function Home() {
               fontWeight: 'bold',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              transition: 'transform 0.2s ease',
             }}
           >
             {cat}
@@ -88,11 +117,12 @@ export default function Home() {
       >
         {subCategories[selectedMain].map((sub) => (
           <button
-            key={sub}
+            key={sub.name}
             onClick={() => setSelectedSub(sub)}
             style={{
               flexShrink: 0,
-              backgroundColor: selectedSub === sub ? '#E60012' : '#bbb',
+              backgroundColor:
+                selectedSub.name === sub.name ? '#E60012' : '#bbb',
               color: '#fff',
               fontSize: '16px',
               padding: '8px 14px',
@@ -102,19 +132,77 @@ export default function Home() {
               fontWeight: 600,
             }}
           >
-            {sub}
+            {sub.name}
           </button>
         ))}
       </nav>
 
-      {/* 仮の中身 */}
+      {/* 商品リスト */}
       <main style={{ padding: '20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '18px' }}>📦 {selectedMain} ＞ {selectedSub}</p>
-        <p style={{ marginTop: '10px', color: '#555' }}>
-          ※ここに {selectedSub} の商品リストが表示されます（モック）
+        <p style={{ fontSize: '18px' }}>
+          📦 {selectedMain} ＞ {selectedSub.name}
         </p>
+
+        {isLoading && <p>読み込み中...</p>}
+        {error && <p>データ取得に失敗しました。</p>}
+        {data && data.Items && data.Items.length > 0 ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '16px',
+              marginTop: '20px',
+            }}
+          >
+            {data.Items.map((i: any) => (
+              <a
+                key={i.Item.itemCode}
+                href={i.Item.affiliateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  background: '#fff',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  padding: '10px',
+                  textDecoration: 'none',
+                  color: '#222',
+                }}
+              >
+                <img
+                  src={i.Item.mediumImageUrls[0].imageUrl}
+                  alt={i.Item.itemName}
+                  width={160}
+                  height={160}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '6px',
+                    objectFit: 'cover',
+                  }}
+                />
+                <h3
+                  style={{
+                    fontSize: '14px',
+                    marginTop: '8px',
+                    height: '3em',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {i.Item.itemName}
+                </h3>
+                <p style={{ color: '#E60012', fontWeight: 'bold' }}>
+                  ¥{i.Item.itemPrice.toLocaleString()}
+                </p>
+              </a>
+            ))}
+          </div>
+        ) : (
+          !isLoading && <p>※データが見つかりません</p>
+        )}
       </main>
     </div>
   );
 }
-// force redeploy
