@@ -1,187 +1,19 @@
 'use client';
-import { useEffect, useState, memo } from 'react';
-import useSWR from 'swr';
-
-type Item = {
-  itemName: string;
-  itemPrice: number;
-  regularPrice?: number;
-  discountRate?: number;
-  affiliateUrl: string;
-  mediumImageUrls?: { imageUrl: string }[];
-  [key: string]: any;
-};
-
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const ProductCard = memo(({ item, index, rankingType }: { item: Item; index: number; rankingType: 'sales' | 'discount' }) => (
-  <div
-    style={{
-      backgroundColor: '#fff',
-      borderRadius: '20px',
-      border: '1px solid #e5e5e5',
-      padding: '18px',
-      marginBottom: '22px',
-      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-      transition: 'transform 0.2s ease',
-      width: '100%',
-      maxWidth: '500px',
-      marginInline: 'auto',
-    }}
-  >
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '14px',
-        flexWrap: 'wrap',
-      }}
-    >
-      {/* ランク番号 */}
-      <div
-        style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: '#E60012',
-          width: '28px',
-          textAlign: 'center',
-        }}
-      >
-        {index + 1}
-      </div>
-
-      {/* 商品画像 */}
-      <img
-        src={item.mediumImageUrls?.[0]?.imageUrl?.replace('?ex=128x128', '') ?? ''}
-        alt={item.itemName}
-        loading="lazy"
-        style={{
-          borderRadius: '12px',
-          border: '1px solid #ccc',
-          width: '90px',
-          height: '90px',
-          objectFit: 'cover',
-          flexShrink: 0,
-        }}
-      />
-
-      {/* 商品情報 */}
-      <div style={{ flex: 1, minWidth: '200px' }}>
-        <h2
-          style={{
-            fontSize: '17px',
-            fontWeight: 'bold',
-            marginBottom: '6px',
-            lineHeight: '1.6em',
-            color: '#222',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {item.itemName}
-        </h2>
-
-        <p style={{ fontWeight: 'bold', fontSize: '19px', marginBottom: '10px' }}>
-          {rankingType === 'discount' && item.discountRate && item.discountRate > 0 ? (
-            <>
-              <span style={{ color: '#E60012' }}>
-                ¥{Number(item.itemPrice).toLocaleString()}
-              </span>
-              <span
-                style={{
-                  textDecoration: 'line-through',
-                  color: '#777',
-                  fontSize: '14px',
-                  marginLeft: '6px',
-                }}
-              >
-                ¥{Number(item.regularPrice || item.itemPrice * 1.2).toLocaleString()}
-              </span>
-              <span style={{ color: '#E60012', fontSize: '14px', marginLeft: '6px' }}>
-                （{item.discountRate}%OFF）
-              </span>
-            </>
-          ) : (
-            <span style={{ color: '#E60012' }}>
-              ¥{Number(item.itemPrice).toLocaleString()}
-            </span>
-          )}
-        </p>
-
-        <a
-          href={item.affiliateUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'block',
-            width: '100%',
-            textAlign: 'center',
-            padding: '12px 0',
-            backgroundColor: '#E60012',
-            color: '#fff',
-            borderRadius: '14px',
-            textDecoration: 'none',
-            fontSize: '17px',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 8px rgba(230,0,18,0.25)',
-            transition: 'transform 0.2s ease',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
-        >
-          🛒 楽天で見る
-        </a>
-      </div>
-    </div>
-  </div>
-));
-ProductCard.displayName = 'ProductCard';
+import { useState } from 'react';
 
 export default function Home() {
-  const [genreId, setGenreId] = useState("100939");
-  const [rankingType, setRankingType] = useState<'sales' | 'discount'>('sales');
-  const [visibleCount, setVisibleCount] = useState(10);
+  const mainCategories = ['家電', '食品', '健康食品', '飲料', '化粧品'];
 
-  const appId = process.env.NEXT_PUBLIC_RAKUTEN_APP_ID;
-  const affiliateId = process.env.NEXT_PUBLIC_RAKUTEN_AFFILIATE_ID;
+  const subCategories: Record<string, string[]> = {
+    '家電': ['健康家電', 'ラジオ', 'マッサージ器'],
+    '食品': ['冷凍弁当', '惣菜セット', '完全食'],
+    '健康食品': ['サプリ', '栄養ドリンク', 'グルコサミン'],
+    '飲料': ['お茶', '水', 'ジュース'],
+    '化粧品': ['育毛剤', 'シミケア', 'シワ対策'],
+  };
 
-  const categories = [
-    { name: "健康食品", id: "100987" },
-    { name: "家電", id: "211742" },
-    { name: "飲料", id: "100316" },
-    { name: "コスメ", id: "100939" },
-    { name: "キッチン", id: "558944" },
-  ];
-
-  const url =
-    rankingType === 'sales'
-      ? `https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20220601?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}`
-      : `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}&hits=30&sort=%2BitemPrice&minPrice=500`;
-
-  const { data, error, isLoading } = useSWR(url, fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 600000,
-  });
-
-  const items: Item[] =
-    data?.Items?.map((obj: any) => {
-      const item = obj.Item;
-      if (rankingType === 'discount') {
-        const regular = item.itemPriceBeforeDiscount || item.itemPrice * 1.2;
-        const discountRate = regular && item.itemPrice
-          ? Math.round(((regular - item.itemPrice) / regular) * 100)
-          : 0;
-        return { ...item, discountRate, regularPrice: regular };
-      }
-      return item;
-    }) || [];
-
-  const sortedItems =
-    rankingType === 'discount'
-      ? items.sort((a: Item, b: Item) => (b.discountRate || 0) - (a.discountRate || 0))
-      : items;
+  const [selectedMain, setSelectedMain] = useState('家電');
+  const [selectedSub, setSelectedSub] = useState('健康家電');
 
   return (
     <div
@@ -189,8 +21,7 @@ export default function Home() {
         fontFamily: 'Hiragino Kaku Gothic ProN, Meiryo, sans-serif',
         backgroundColor: '#f9f9f9',
         color: '#222',
-        lineHeight: 1.8,
-        paddingBottom: '40px',
+        minHeight: '100vh',
       }}
     >
       <header
@@ -207,99 +38,81 @@ export default function Home() {
         シニアらくらくモール
       </header>
 
-      {/* ランキング種別タブ */}
+      {/* 上段：大ジャンル */}
       <nav
         style={{
           display: 'flex',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '12px',
+          overflowX: 'auto',
+          gap: '8px',
+          padding: '12px 10px',
           background: '#fff',
           borderBottom: '1px solid #ddd',
-          flexWrap: 'wrap',
         }}
       >
-        {['sales', 'discount'].map((t) => (
+        {mainCategories.map((cat) => (
           <button
-            key={t}
-            onClick={() => setRankingType(t as any)}
+            key={cat}
+            onClick={() => {
+              setSelectedMain(cat);
+              setSelectedSub(subCategories[cat][0]);
+            }}
             style={{
-              backgroundColor: rankingType === t ? '#E60012' : '#ccc',
+              flexShrink: 0,
+              backgroundColor: selectedMain === cat ? '#E60012' : '#ccc',
               color: '#fff',
               fontSize: '17px',
-              padding: '10px 18px',
+              padding: '10px 16px',
               borderRadius: '22px',
               border: 'none',
+              fontWeight: 'bold',
               cursor: 'pointer',
-              minWidth: '120px',
+              whiteSpace: 'nowrap',
+              transition: 'transform 0.2s ease',
             }}
           >
-            {t === 'sales' ? '人気順' : '割引順'}
+            {cat}
           </button>
         ))}
       </nav>
 
-      {/* ジャンルタブ */}
+      {/* 下段：小ジャンル */}
       <nav
         style={{
           display: 'flex',
           overflowX: 'auto',
           gap: '10px',
           padding: '10px',
-          background: '#fff',
+          background: '#fafafa',
           borderBottom: '1px solid #ddd',
         }}
       >
-        {categories.map((c) => (
+        {subCategories[selectedMain].map((sub) => (
           <button
-            key={c.id}
-            onClick={() => setGenreId(c.id)}
+            key={sub}
+            onClick={() => setSelectedSub(sub)}
             style={{
               flexShrink: 0,
-              backgroundColor: genreId === c.id ? '#E60012' : '#bbb',
+              backgroundColor: selectedSub === sub ? '#E60012' : '#bbb',
               color: '#fff',
-              fontSize: '17px',
-              fontWeight: 600,
-              padding: '10px 18px',
-              borderRadius: '22px',
+              fontSize: '16px',
+              padding: '8px 14px',
+              borderRadius: '20px',
               border: 'none',
               whiteSpace: 'nowrap',
+              fontWeight: 600,
             }}
           >
-            {c.name}
+            {sub}
           </button>
         ))}
       </nav>
 
-      {/* ステータス */}
-      {isLoading && <p style={{ textAlign: 'center', marginTop: '40px' }}>📡 データ取得中...</p>}
-      {error && <p style={{ textAlign: 'center', color: 'red' }}>通信エラーが発生しました。</p>}
-
-      {/* 商品一覧 */}
-      <main style={{ padding: '24px 16px' }}>
-        {sortedItems.slice(0, visibleCount).map((item: Item, i: number) => (
-          <ProductCard key={i} item={item} index={i} rankingType={rankingType} />
-        ))}
-
-        {visibleCount < sortedItems.length && (
-          <button
-            onClick={() => setVisibleCount(v => v + 10)}
-            style={{
-              display: 'block',
-              margin: '30px auto',
-              padding: '12px 24px',
-              backgroundColor: '#E60012',
-              color: '#fff',
-              borderRadius: '16px',
-              fontSize: '18px',
-              border: 'none',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(230,0,18,0.25)',
-            }}
-          >
-            もっと見る
-          </button>
-        )}
+      {/* 仮の中身 */}
+      <main style={{ padding: '20px', textAlign: 'center' }}>
+        <p style={{ fontSize: '18px' }}>📦 {selectedMain} ＞ {selectedSub}</p>
+        <p style={{ marginTop: '10px', color: '#555' }}>
+          ※ここに {selectedSub} の商品リストが表示されます（モック）
+        </p>
       </main>
     </div>
   );
