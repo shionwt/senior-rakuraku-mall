@@ -7,14 +7,14 @@ export async function GET(request: Request) {
   const appId = process.env.NEXT_PUBLIC_RAKUTEN_APP_ID;
   const affiliateId = process.env.NEXT_PUBLIC_RAKUTEN_AFFILIATE_ID;
 
-  const url = `https://app.rakuten.co.jp/services/api/IchibaItemRanking/20170628?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}&hits=10`;
+  // ✅ 正しいURL（スラッシュなし）
+  const url = `https://app.rakuten.co.jp/services/api/IchibaItemRanking/20170628?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}&hits=30`;
 
   console.log('🔍 リクエストURL:', url);
 
   try {
     const res = await fetch(url);
     console.log('🔍 ステータス:', res.status);
-
     const data = await res.json();
     console.log('🔍 APIレスポンス:', data);
 
