@@ -12,7 +12,6 @@ type Item = {
     itemUrl: string;
     mediumImageUrls: { imageUrl: string }[];
     shopName: string;
-    rank: number;
   };
 };
 
@@ -73,16 +72,22 @@ export default function HomePage() {
 
   const items: Item[] = data?.Items || [];
 
-  const getBadgeColor = (index: number) => {
-    if (index === 0) return 'bg-yellow-400 text-white'; // 1位：金
-    if (index === 1) return 'bg-gray-400 text-white';   // 2位：銀
-    if (index === 2) return 'bg-orange-500 text-white'; // 3位：銅
-    return 'bg-red-600 text-white';                     // 4位以降
+  const getBadgeStyle = (index: number) => {
+    switch (index) {
+      case 0:
+        return 'bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-500 text-white border border-yellow-200 shadow-lg';
+      case 1:
+        return 'bg-gradient-to-br from-gray-400 via-gray-300 to-gray-500 text-white border border-gray-200 shadow-lg';
+      case 2:
+        return 'bg-gradient-to-br from-orange-500 via-orange-400 to-orange-600 text-white border border-orange-200 shadow-lg';
+      default:
+        return 'bg-red-600 text-white shadow';
+    }
   };
 
   return (
-    <main className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">シニアらくらくモール</h1>
+    <main className="max-w-7xl mx-auto p-4 bg-[#f8f8f8] min-h-screen">
+      <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">シニアらくらくモール</h1>
 
       {/* ジャンル切り替え */}
       <div className="flex flex-wrap justify-center gap-3 mb-6">
@@ -93,10 +98,10 @@ export default function HomePage() {
               setSelectedGenre(g.name);
               setSelectedSubGenre('総合ランキング');
             }}
-            className={`px-4 py-2 rounded-full text-lg font-semibold ${
+            className={`px-4 py-2 rounded-full text-lg font-semibold transition-all ${
               selectedGenre === g.name
-                ? 'bg-red-600 text-white shadow'
-                : 'bg-gray-200 text-gray-700'
+                ? 'bg-red-600 text-white shadow-md scale-105'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             {g.name}
@@ -110,10 +115,10 @@ export default function HomePage() {
           <button
             key={sg.name}
             onClick={() => setSelectedSubGenre(sg.name)}
-            className={`px-4 py-2 rounded-full text-md font-semibold ${
+            className={`px-4 py-2 rounded-full text-md font-semibold transition ${
               selectedSubGenre === sg.name
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 border border-gray-300'
+                ? 'bg-red-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
             }`}
           >
             {sg.name}
@@ -121,12 +126,11 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* 現在のカテゴリ */}
-      <h2 className="text-xl font-semibold mb-4 text-center">
+      <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">
         📦 {selectedGenre} ＞ {selectedSubGenre}
       </h2>
 
-      {/* ランキング一覧 */}
+      {/* 商品リスト */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
         {items.map((item, index) => {
           const info = item.Item;
@@ -138,9 +142,9 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="block bg-white rounded-2xl shadow hover:shadow-lg transition p-3 text-center relative"
             >
-              {/* 順位バッジ */}
+              {/* 光沢バッジ */}
               <div
-                className={`absolute top-0 left-0 px-2 py-1 font-bold rounded-br-lg ${getBadgeColor(
+                className={`absolute top-0 left-0 px-2 py-1 text-sm font-bold rounded-br-lg border ${getBadgeStyle(
                   index
                 )}`}
               >
@@ -153,7 +157,7 @@ export default function HomePage() {
                 className="mx-auto rounded-lg w-full h-40 object-contain mb-2"
               />
 
-              <p className="text-sm font-semibold line-clamp-2 min-h-[3em]">{info.itemName}</p>
+              <p className="text-sm font-semibold text-gray-800 line-clamp-2 min-h-[3em]">{info.itemName}</p>
               <p className="text-red-600 font-bold text-lg mt-1">
                 ¥{info.itemPrice.toLocaleString()}
               </p>
