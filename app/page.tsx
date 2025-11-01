@@ -14,7 +14,8 @@ type Item = {
     itemName: string;
     itemPrice: number;
     itemUrl: string;
-    largeImageUrls: { imageUrl: string }[];
+    largeImageUrls?: { imageUrl: string }[];
+    mediumImageUrls?: { imageUrl: string }[];
     shopName: string;
   };
 };
@@ -154,11 +155,18 @@ export default function HomePage() {
             ) : (
               items.map((item, index) => {
                 const info = item.Item;
+
+                // ✅ 画像の安全フェイルオーバー処理
                 const imageUrl =
-                  info.largeImageUrls?.[0]?.imageUrl.replace(
+                  info.largeImageUrls?.[0]?.imageUrl?.replace(
                     '?ex=300x300',
                     ''
-                  ) || '';
+                  ) ||
+                  info.mediumImageUrls?.[0]?.imageUrl?.replace(
+                    '?ex=128x128',
+                    ''
+                  ) ||
+                  '';
 
                 return (
                   <a
@@ -168,7 +176,6 @@ export default function HomePage() {
                     rel="noopener noreferrer"
                     className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative"
                   >
-                    {/* 順位バッジ */}
                     <div
                       className={`absolute top-0 left-0 px-3 py-1 text-base font-bold rounded-br-lg border ${getBadgeStyle(
                         index
