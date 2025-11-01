@@ -90,9 +90,9 @@ export default function HomePage() {
   };
 
   return (
-    <main className={`${noto.className} bg-[#faf7f2] min-h-screen`}>
+    <main className={`${noto.className} bg-[#fdfbf8] min-h-screen`}>
       {/* 固定ナビ */}
-      <header className="sticky top-0 z-50 border-b border-[#eadfce]/70 backdrop-blur-md bg-[#faf7f2]/95 shadow-sm">
+      <header className="sticky top-0 z-50 border-b border-[#eadfce]/70 backdrop-blur-md bg-[#fdfbf8]/95 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 leading-relaxed">
             シニアらくらくモール
@@ -156,7 +156,7 @@ export default function HomePage() {
               items.map((item, index) => {
                 const info = item.Item;
 
-                // ✅ 画像の高画質化＋フェイルオーバー処理
+                // ✅ 高画質＋フェイルオーバー＋正規表現でリサイズ削除
                 const imageUrl =
                   info.largeImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
                   info.mediumImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
@@ -168,7 +168,7 @@ export default function HomePage() {
                     href={info.itemUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative"
+                    className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative border border-gray-100"
                   >
                     <div
                       className={`absolute top-0 left-0 px-3 py-1 text-base font-bold rounded-br-lg border ${getBadgeStyle(
@@ -178,14 +178,14 @@ export default function HomePage() {
                       {index + 1}位
                     </div>
 
-                    {/* 画像をフェードイン＆くっきり補正 */}
+                    {/* 画像：フェード＋くっきり補正 */}
                     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden shadow-sm">
                       <motion.img
                         src={imageUrl}
                         alt={info.itemName}
                         decoding="async"
                         loading="eager"
-                        className="w-full h-52 object-contain transition-opacity duration-500"
+                        className="w-full h-52 object-contain max-w-none transition-opacity duration-500"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                       />
