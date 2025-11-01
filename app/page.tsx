@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState } from 'react';
 import useSWR from 'swr';
 import { fetchRakutenItems } from '../lib/rakuten';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Item = {
   Item: {
@@ -83,14 +84,11 @@ export default function HomePage() {
     }
   };
 
-  // Skeleton（読み込み時）
-  const skeletons = Array.from({ length: 10 });
-
   return (
     <main className="max-w-7xl mx-auto p-3 sm:p-4 bg-[#f8f8f8] min-h-screen">
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-gray-800">シニアらくらくモール</h1>
 
-      {/* カテゴリ */}
+      {/* カテゴリ切替 */}
       <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
         {genres.map((g) => (
           <button
@@ -132,53 +130,52 @@ export default function HomePage() {
       </h2>
 
       {/* コンテンツ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
-        {isLoading
-          ? skeletons.map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl shadow p-3 animate-pulse h-60 sm:h-72"
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentGenreId}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5"
+        >
+          {items.map((item, index) => {
+            const info = item.Item;
+            return (
+              <a
+                key={index}
+                href={info.itemUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white rounded-2xl shadow hover:shadow-lg transition p-3 text-center relative"
               >
-                <div className="bg-gray-200 rounded-lg h-32 mb-3" />
-                <div className="h-3 bg-gray-200 rounded w-3/4 mx-auto mb-2" />
-                <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto" />
-              </div>
-            ))
-          : items.map((item, index) => {
-              const info = item.Item;
-              return (
-                <a
-                  key={index}
-                  href={info.itemUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block bg-white rounded-2xl shadow hover:shadow-lg transition p-3 text-center relative"
+                {/* 光沢バッジ */}
+                <div
+                  className={`absolute top-0 left-0 px-2 py-1 text-xs sm:text-sm font-bold rounded-br-lg border ${getBadgeStyle(
+                    index
+                  )}`}
                 >
-                  <div
-                    className={`absolute top-0 left-0 px-2 py-1 text-xs sm:text-sm font-bold rounded-br-lg border ${getBadgeStyle(
-                      index
-                    )}`}
-                  >
-                    {index + 1}位
-                  </div>
+                  {index + 1}位
+                </div>
 
-                  <img
-                    src={info.mediumImageUrls?.[0]?.imageUrl.replace('?ex=128x128', '')}
-                    alt={info.itemName}
-                    className="mx-auto rounded-lg w-full h-32 sm:h-40 object-contain mb-2"
-                  />
+                <img
+                  src={info.mediumImageUrls?.[0]?.imageUrl.replace('?ex=128x128', '')}
+                  alt={info.itemName}
+                  className="mx-auto rounded-lg w-full h-32 sm:h-40 object-contain mb-2"
+                />
 
-                  <p className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 min-h-[2.5em]">
-                    {info.itemName}
-                  </p>
-                  <p className="text-red-600 font-bold text-base sm:text-lg mt-1">
-                    ¥{info.itemPrice.toLocaleString()}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">{info.shopName}</p>
-                </a>
-              );
-            })}
-      </div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 min-h-[2.5em]">
+                  {info.itemName}
+                </p>
+                <p className="text-red-600 font-bold text-base sm:text-lg mt-1">
+                  ¥{info.itemPrice.toLocaleString()}
+                </p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">{info.shopName}</p>
+              </a>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 }
