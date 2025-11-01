@@ -14,7 +14,7 @@ type Item = {
     itemName: string;
     itemPrice: number;
     itemUrl: string;
-    mediumImageUrls: { imageUrl: string }[];
+    largeImageUrls: { imageUrl: string }[];
     shopName: string;
   };
 };
@@ -64,13 +64,12 @@ export default function HomePage() {
     return list.find((g) => g.name === selectedSubGenre)?.id ?? '555164';
   }, [selectedGenre, selectedSubGenre]);
 
-  // SWRでデータ取得（前データ破棄して即切替）
   const { data, error, isLoading } = useSWR(
     ['ranking', currentGenreId],
     () => fetchRakutenItems(currentGenreId),
     {
       revalidateOnFocus: false,
-      keepPreviousData: false, // ← 前データ残さない
+      keepPreviousData: false,
     }
   );
 
@@ -91,15 +90,15 @@ export default function HomePage() {
 
   return (
     <main className={`${noto.className} bg-[#faf7f2] min-h-screen`}>
-      {/* 固定ナビゲーション */}
+      {/* 固定ナビ */}
       <header className="sticky top-0 z-50 border-b border-[#eadfce]/70 backdrop-blur-md bg-[#faf7f2]/95 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 leading-relaxed">
             シニアらくらくモール
           </h1>
 
-          {/* ジャンルボタン */}
-          <nav className="mt-3 flex flex-wrap justify-center gap-2">
+          {/* ジャンルスライドナビ */}
+          <nav className="mt-3 flex overflow-x-auto no-scrollbar space-x-2 pb-1">
             {GENRES.map((g) => (
               <button
                 key={g.name}
@@ -107,7 +106,7 @@ export default function HomePage() {
                   setSelectedGenre(g.name);
                   setSelectedSubGenre('総合ランキング');
                 }}
-                className={`px-4 py-2 rounded-full text-base sm:text-lg font-semibold transition-all focus:outline-none ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-base font-semibold transition-all ${
                   selectedGenre === g.name
                     ? 'bg-[#e74c3c] text-white shadow-sm scale-105'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -118,13 +117,13 @@ export default function HomePage() {
             ))}
           </nav>
 
-          {/* サブジャンル */}
-          <nav className="mt-3 mb-1 flex flex-wrap justify-center gap-2">
+          {/* サブジャンルスライド */}
+          <nav className="mt-2 flex overflow-x-auto no-scrollbar space-x-2 pb-1">
             {SUB_GENRES[selectedGenre as keyof typeof SUB_GENRES].map((sg) => (
               <button
                 key={sg.name}
                 onClick={() => setSelectedSubGenre(sg.name)}
-                className={`px-4 py-2 rounded-full text-sm sm:text-base font-semibold transition-all ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   selectedSubGenre === sg.name
                     ? 'bg-[#e74c3c] text-white'
                     : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
@@ -145,14 +144,22 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }} // ← フェード早め
+            transition={{ duration: 0.2 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5"
           >
             {isLoading ? (
-              <p className="text-center text-gray-500 py-10 text-lg">読み込み中...</p>
+              <p className="text-center text-gray-500 py-10 text-lg">
+                読み込み中です...
+              </p>
             ) : (
               items.map((item, index) => {
                 const info = item.Item;
+                const imageUrl =
+                  info.largeImageUrls?.[0]?.imageUrl.replace(
+                    '?ex=300x300',
+                    ''
+                  ) || '';
+
                 return (
                   <a
                     key={index}
@@ -161,6 +168,7 @@ export default function HomePage() {
                     rel="noopener noreferrer"
                     className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative"
                   >
+                    {/* 順位バッジ */}
                     <div
                       className={`absolute top-0 left-0 px-3 py-1 text-base font-bold rounded-br-lg border ${getBadgeStyle(
                         index
@@ -169,12 +177,14 @@ export default function HomePage() {
                       {index + 1}位
                     </div>
 
-                    <img
-                      src={info.mediumImageUrls?.[0]?.imageUrl.replace('?ex=128x128', '')}
-                      alt={info.itemName}
-                      className="mx-auto rounded-lg w-full h-52 object-contain mb-3"
-                      loading="lazy"
-                    />
+                    <div className="bg-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt={info.itemName}
+                        className="w-full h-52 object-contain transition-opacity duration-300"
+                        loading="lazy"
+                      />
+                    </div>
 
                     <p className="text-lg font-semibold text-gray-800 leading-snug mb-2 line-clamp-2">
                       {info.itemName}
@@ -182,7 +192,9 @@ export default function HomePage() {
                     <p className="text-[#e74c3c] font-bold text-xl mt-1">
                       ¥{info.itemPrice.toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">{info.shopName}</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {info.shopName}
+                    </p>
                   </a>
                 );
               })
