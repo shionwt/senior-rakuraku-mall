@@ -77,11 +77,12 @@ export default function HomePage() {
 
   // 💡 アフィリエイト対応率を計算
   const totalCount = data?.Items?.length || 0;
-  const affiliateCount =
-    data?.Items?.filter((i) => i.Item.affiliateUrl)?.length || 0;
-  const affiliateRate = totalCount
-    ? ((affiliateCount / totalCount) * 100).toFixed(1)
-    : 0;
+const affiliateCount =
+  data?.Items?.filter((i: Item) => i.Item.affiliateUrl)?.length || 0;
+const affiliateRate = totalCount
+  ? ((affiliateCount / totalCount) * 100).toFixed(1)
+  : 0;
+
 
   // 📊 開発用ログ出力
   useEffect(() => {
