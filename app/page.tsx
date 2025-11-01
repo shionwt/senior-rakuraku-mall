@@ -75,7 +75,6 @@ export default function HomePage() {
     }
   );
 
-  // ✅ アフィリエイト対応率を計算
   const totalCount: number = data?.Items?.length || 0;
   const affiliateCount: number =
     data?.Items?.filter((i: RakutenItem) => i.Item.affiliateUrl)?.length || 0;
@@ -84,7 +83,6 @@ export default function HomePage() {
       ? ((affiliateCount / totalCount) * 100).toFixed(1)
       : '0.0';
 
-  // 📊 開発用ログ
   useEffect(() => {
     if (totalCount > 0) {
       console.log(
@@ -93,7 +91,6 @@ export default function HomePage() {
     }
   }, [data, selectedGenre, selectedSubGenre]);
 
-  // ✅ affiliateUrlがある商品だけ残す
   const items: RakutenItem[] =
     data?.Items?.filter((i: RakutenItem) => i.Item.affiliateUrl) || [];
 
@@ -170,7 +167,7 @@ export default function HomePage() {
       </header>
 
       {/* コンテンツ */}
-      <section className="max-w-5xl mx-auto px-4 py-4">
+      <section className="max-w-5xl mx-auto px-3 py-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentGenreId}
@@ -178,10 +175,10 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-5"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-3"
           >
             {isLoading ? (
-              <p className="text-center text-gray-500 py-10 text-lg">
+              <p className="text-center text-gray-500 py-8 text-base">
                 読み込み中です...
               </p>
             ) : items.length > 0 ? (
@@ -198,40 +195,42 @@ export default function HomePage() {
                     href={info.affiliateUrl || info.itemUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative border border-gray-100"
+                    className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-3 text-center relative border border-gray-100"
                   >
                     <div
-                      className={`absolute top-0 left-0 px-3 py-1 text-base font-bold rounded-br-lg border ${getBadgeStyle(
+                      className={`absolute top-0 left-0 px-2 py-1 text-sm font-bold rounded-br-lg border ${getBadgeStyle(
                         index
                       )}`}
                     >
                       {index + 1}位
                     </div>
 
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden shadow-sm">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-2 overflow-hidden shadow-sm">
                       <motion.img
                         src={imageUrl}
                         alt={info.itemName}
                         decoding="async"
                         loading="eager"
-                        className="w-full h-52 object-contain max-w-none transition-opacity duration-500"
+                        className="w-full h-40 object-contain max-w-none transition-opacity duration-500"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                       />
                     </div>
 
-                    <p className="text-lg font-semibold text-gray-800 leading-snug mb-2 line-clamp-2">
+                    <p className="text-base font-semibold text-gray-800 leading-snug mb-1 line-clamp-2">
                       {info.itemName}
                     </p>
-                    <p className="text-[#e74c3c] font-bold text-xl mt-1">
+                    <p className="text-[#e74c3c] font-bold text-lg mt-1">
                       ¥{info.itemPrice.toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">{info.shopName}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {info.shopName}
+                    </p>
                   </a>
                 );
               })
             ) : (
-              <p className="text-center text-gray-500 py-10 text-lg">
+              <p className="text-center text-gray-500 py-8 text-base">
                 アフィリエイト対応商品が見つかりませんでした。
               </p>
             )}
