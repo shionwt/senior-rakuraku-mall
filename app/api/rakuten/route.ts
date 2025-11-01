@@ -7,7 +7,8 @@ export async function GET(request: Request) {
   const appId = process.env.NEXT_PUBLIC_RAKUTEN_APP_ID;
   const affiliateId = process.env.NEXT_PUBLIC_RAKUTEN_AFFILIATE_ID;
 
-  const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=${appId}&genreId=${genreId}&hits=30`;
+  // ✅ アフィリエイトID付きのリクエストURLに変更
+  const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}&hits=30`;
 
   try {
     const res = await fetch(url);
