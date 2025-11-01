@@ -145,7 +145,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5"
           >
             {isLoading ? (
@@ -156,16 +156,10 @@ export default function HomePage() {
               items.map((item, index) => {
                 const info = item.Item;
 
-                // ✅ 画像の安全フェイルオーバー処理
+                // ✅ 画像の高画質化＋フェイルオーバー処理
                 const imageUrl =
-                  info.largeImageUrls?.[0]?.imageUrl?.replace(
-                    '?ex=300x300',
-                    ''
-                  ) ||
-                  info.mediumImageUrls?.[0]?.imageUrl?.replace(
-                    '?ex=128x128',
-                    ''
-                  ) ||
+                  info.largeImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
+                  info.mediumImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
                   '';
 
                 return (
@@ -184,12 +178,16 @@ export default function HomePage() {
                       {index + 1}位
                     </div>
 
-                    <div className="bg-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
-                      <img
+                    {/* 画像をフェードイン＆くっきり補正 */}
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden shadow-sm">
+                      <motion.img
                         src={imageUrl}
                         alt={info.itemName}
-                        className="w-full h-52 object-contain transition-opacity duration-300"
-                        loading="lazy"
+                        decoding="async"
+                        loading="eager"
+                        className="w-full h-52 object-contain transition-opacity duration-500"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                       />
                     </div>
 
