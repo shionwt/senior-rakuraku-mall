@@ -1,8 +1,7 @@
-
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { fetchRakutenItems } from '../lib/rakuten';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,7 +75,26 @@ export default function HomePage() {
     }
   );
 
-  const items: Item[] = data?.Items || [];
+  // 💡 アフィリエイト対応率を計算
+  const totalCount = data?.Items?.length || 0;
+  const affiliateCount =
+    data?.Items?.filter((i) => i.Item.affiliateUrl)?.length || 0;
+  const affiliateRate = totalCount
+    ? ((affiliateCount / totalCount) * 100).toFixed(1)
+    : 0;
+
+  // 📊 開発用ログ出力
+  useEffect(() => {
+    if (totalCount > 0) {
+      console.log(
+        `📊 ${selectedGenre}(${selectedSubGenre})：アフィリエイト対応率 ${affiliateRate}% (${affiliateCount}/${totalCount})`
+      );
+    }
+  }, [data, selectedGenre, selectedSubGenre]);
+
+  // ✅ affiliateUrlがある商品だけ残す
+  const items: Item[] =
+    data?.Items?.filter((i) => i.Item.affiliateUrl) || [];
 
   const getBadgeStyle = (index: number) => {
     switch (index) {
@@ -136,6 +154,17 @@ export default function HomePage() {
               </button>
             ))}
           </nav>
+
+          {/* 💰 アフィリエイト率表示 */}
+          {totalCount > 0 && (
+            <p className="text-center text-sm text-gray-600 mt-2">
+              アフィリエイト対応率：{' '}
+              <span className="font-semibold text-[#e74c3c]">
+                {affiliateRate}%
+              </span>{' '}
+              （{affiliateCount}/{totalCount}件）
+            </p>
+          )}
         </div>
       </header>
 
@@ -154,10 +183,9 @@ export default function HomePage() {
               <p className="text-center text-gray-500 py-10 text-lg">
                 読み込み中です...
               </p>
-            ) : (
+            ) : items.length > 0 ? (
               items.map((item, index) => {
                 const info = item.Item;
-
                 const imageUrl =
                   info.largeImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
                   info.mediumImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
@@ -166,7 +194,7 @@ export default function HomePage() {
                 return (
                   <a
                     key={index}
-                    href={info.affiliateUrl || info.itemUrl} // ✅ アフィリエイトURLを優先
+                    href={info.affiliateUrl || info.itemUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative border border-gray-100"
@@ -197,12 +225,14 @@ export default function HomePage() {
                     <p className="text-[#e74c3c] font-bold text-xl mt-1">
                       ¥{info.itemPrice.toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {info.shopName}
-                    </p>
+                    <p className="text-sm text-gray-500 mt-2">{info.shopName}</p>
                   </a>
                 );
               })
+            ) : (
+              <p className="text-center text-gray-500 py-10 text-lg">
+                アフィリエイト対応商品が見つかりませんでした。
+              </p>
             )}
           </motion.div>
         </AnimatePresence>
