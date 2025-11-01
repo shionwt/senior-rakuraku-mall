@@ -9,7 +9,7 @@ import { Noto_Sans_JP } from 'next/font/google';
 
 const noto = Noto_Sans_JP({ subsets: ['latin'], weight: ['400', '700'] });
 
-type Item = {
+type RakutenItem = {
   Item: {
     itemName: string;
     itemPrice: number;
@@ -75,27 +75,27 @@ export default function HomePage() {
     }
   );
 
-  // 💡 アフィリエイト対応率を計算
-  const totalCount = data?.Items?.length || 0;
-const affiliateCount =
-  data?.Items?.filter((i: Item) => i.Item.affiliateUrl)?.length || 0;
-const affiliateRate = totalCount
-  ? ((affiliateCount / totalCount) * 100).toFixed(1)
-  : 0;
+  // ✅ アフィリエイト対応率を計算
+  const totalCount: number = data?.Items?.length || 0;
+  const affiliateCount: number =
+    data?.Items?.filter((i: RakutenItem) => i.Item.affiliateUrl)?.length || 0;
+  const affiliateRate =
+    totalCount > 0
+      ? ((affiliateCount / totalCount) * 100).toFixed(1)
+      : '0.0';
 
-
-  // 📊 開発用ログ出力
+  // 📊 開発用ログ
   useEffect(() => {
     if (totalCount > 0) {
       console.log(
-        `📊 ${selectedGenre}(${selectedSubGenre})：アフィリエイト対応率 ${affiliateRate}% (${affiliateCount}/${totalCount})`
+        `📊 ${selectedGenre}(${selectedSubGenre})：アフィ対応率 ${affiliateRate}% (${affiliateCount}/${totalCount})`
       );
     }
   }, [data, selectedGenre, selectedSubGenre]);
 
   // ✅ affiliateUrlがある商品だけ残す
-  const items: Item[] =
-    data?.Items?.filter((i) => i.Item.affiliateUrl) || [];
+  const items: RakutenItem[] =
+    data?.Items?.filter((i: RakutenItem) => i.Item.affiliateUrl) || [];
 
   const getBadgeStyle = (index: number) => {
     switch (index) {
@@ -185,7 +185,7 @@ const affiliateRate = totalCount
                 読み込み中です...
               </p>
             ) : items.length > 0 ? (
-              items.map((item, index) => {
+              items.map((item: RakutenItem, index: number) => {
                 const info = item.Item;
                 const imageUrl =
                   info.largeImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
