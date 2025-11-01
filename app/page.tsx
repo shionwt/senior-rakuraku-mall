@@ -1,3 +1,4 @@
+
 'use client';
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,7 @@ type Item = {
     itemName: string;
     itemPrice: number;
     itemUrl: string;
+    affiliateUrl?: string;
     largeImageUrls?: { imageUrl: string }[];
     mediumImageUrls?: { imageUrl: string }[];
     shopName: string;
@@ -156,7 +158,6 @@ export default function HomePage() {
               items.map((item, index) => {
                 const info = item.Item;
 
-                // ✅ 高画質＋フェイルオーバー＋正規表現でリサイズ削除
                 const imageUrl =
                   info.largeImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
                   info.mediumImageUrls?.[0]?.imageUrl?.replace(/\?ex=\d+x\d+/, '') ||
@@ -165,7 +166,7 @@ export default function HomePage() {
                 return (
                   <a
                     key={index}
-                    href={info.itemUrl}
+                    href={info.affiliateUrl || info.itemUrl} // ✅ アフィリエイトURLを優先
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center relative border border-gray-100"
@@ -178,7 +179,6 @@ export default function HomePage() {
                       {index + 1}位
                     </div>
 
-                    {/* 画像：フェード＋くっきり補正 */}
                     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden shadow-sm">
                       <motion.img
                         src={imageUrl}
