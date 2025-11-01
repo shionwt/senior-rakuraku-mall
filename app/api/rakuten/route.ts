@@ -7,8 +7,8 @@ export async function GET(request: Request) {
   const appId = process.env.NEXT_PUBLIC_RAKUTEN_APP_ID;
   const affiliateId = process.env.NEXT_PUBLIC_RAKUTEN_AFFILIATE_ID;
 
-  // ✅ 正しいURL（スラッシュなし）
-  const url = `https://app.rakuten.co.jp/services/api/IchibaItemRanking/20170628?format=json&applicationId=${appId}&affiliateId=${affiliateId}&genreId=${genreId}&hits=30`;
+  // ✅ 正しいURL（スラッシュなし・バッククォート使用）
+  const url = `https://app.rakuten.co.jp/services/api/IchibaItemRanking/20170628?format=json&applicationId=${appId}&genreId=${genreId}&hits=30`;
 
   console.log('🔍 リクエストURL:', url);
 
