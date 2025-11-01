@@ -3,206 +3,148 @@ export const dynamic = "force-dynamic";
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { fetchRakutenItems } from '@/lib/rakuten';
+import { fetchRakutenItems } from '../lib/rakuten';
 
-export default function Home() {
-  const mainCategories = ['家電', '食品', '健康食品', '飲料', '化粧品'];
-
-  const subCategories: Record<string, { name: string; genreId: string }[]> = {
-    '家電': [
-      { name: '総合ランキング', genreId: '0' },
-      { name: '健康家電', genreId: '211742' },
-      { name: 'マッサージ器', genreId: '100316' },
-    ],
-    '食品': [
-      { name: '総合ランキング', genreId: '0' },
-      { name: 'サプリ', genreId: '551167' },
-      { name: '飲料', genreId: '100316' },
-    ],
-    '健康食品': [
-      { name: 'サプリメント', genreId: '551167' },
-      { name: '栄養ドリンク', genreId: '100671' },
-      { name: 'グルコサミン', genreId: '551170' },
-    ],
-    '飲料': [
-      { name: 'ドリンク総合', genreId: '100316' },
-      { name: 'お茶', genreId: '100317' },
-      { name: '水', genreId: '100319' },
-    ],
-    '化粧品': [
-      { name: '美容総合', genreId: '100939' },
-      { name: '育毛剤', genreId: '100939' },
-      { name: 'スキンケア', genreId: '100939' },
-    ],
+type Item = {
+  Item: {
+    itemName: string;
+    itemPrice: number;
+    itemUrl: string;
+    mediumImageUrls: { imageUrl: string }[];
+    shopName: string;
+    rank: number;
   };
+};
 
-  const [selectedMain, setSelectedMain] = useState('家電');
-  const [selectedSub, setSelectedSub] = useState(subCategories['家電'][0]);
+const genres = [
+  { name: '家電', id: '555164' },
+  { name: '食品', id: '100227' },
+  { name: '健康食品', id: '551167' },
+  { name: '飲料', id: '100316' },
+  { name: '化粧品', id: '100939' },
+];
+
+const subGenres = {
+  '家電': [
+    { name: '総合ランキング', id: '555164' },
+    { name: '健康家電', id: '100804' },
+    { name: 'マッサージ器', id: '100806' },
+  ],
+  '食品': [
+    { name: '総合ランキング', id: '100227' },
+    { name: '米・雑穀', id: '100316' },
+    { name: '惣菜', id: '100227' },
+  ],
+  '健康食品': [
+    { name: '総合ランキング', id: '551167' },
+    { name: 'サプリメント', id: '551169' },
+  ],
+  '飲料': [
+    { name: '総合ランキング', id: '100316' },
+    { name: 'お茶', id: '100317' },
+    { name: 'コーヒー', id: '100318' },
+  ],
+  '化粧品': [
+    { name: '総合ランキング', id: '100939' },
+    { name: 'スキンケア', id: '100940' },
+    { name: 'メイクアップ', id: '100941' },
+  ],
+};
+
+export default function HomePage() {
+  const [selectedGenre, setSelectedGenre] = useState('家電');
+  const [selectedSubGenre, setSelectedSubGenre] = useState('総合ランキング');
+
+  const currentGenreId =
+    subGenres[selectedGenre].find((g) => g.name === selectedSubGenre)?.id || '555164';
 
   const { data, error, isLoading } = useSWR(
-    selectedSub ? ['rakuten', selectedSub.genreId] : null,
-    () => fetchRakutenItems(selectedSub.genreId)
+    ['ranking', currentGenreId],
+    () => fetchRakutenItems(currentGenreId),
+    { revalidateOnFocus: false, keepPreviousData: true }
   );
 
+  if (error) return <p className="text-center mt-10">データ取得に失敗しました。</p>;
+  if (isLoading) return <p className="text-center mt-10">読み込み中...</p>;
+
+  const items: Item[] = data?.Items || [];
+
   return (
-    <div
-      style={{
-        fontFamily: 'Hiragino Kaku Gothic ProN, Meiryo, sans-serif',
-        backgroundColor: '#f9f9f9',
-        color: '#222',
-        minHeight: '100vh',
-      }}
-    >
-      {/* ヘッダー */}
-      <header
-        style={{
-          backgroundColor: '#fff',
-          padding: '16px 0',
-          borderBottom: '2px solid #E60012',
-          textAlign: 'center',
-          fontSize: '26px',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-        }}
-      >
-        シニアらくらくモール
-      </header>
+    <main className="max-w-6xl mx-auto p-4">
+      <h1 className="text-3xl font-bold text-center mb-6">シニアらくらくモール</h1>
 
-      {/* 上段：大ジャンル */}
-      <nav
-        style={{
-          display: 'flex',
-          overflowX: 'auto',
-          gap: '8px',
-          padding: '12px 10px',
-          background: '#fff',
-          borderBottom: '1px solid #ddd',
-        }}
-      >
-        {mainCategories.map((cat) => (
+      {/* カテゴリ選択 */}
+      <div className="flex flex-wrap justify-center gap-3 mb-6">
+        {genres.map((g) => (
           <button
-            key={cat}
+            key={g.name}
             onClick={() => {
-              setSelectedMain(cat);
-              setSelectedSub(subCategories[cat][0]);
+              setSelectedGenre(g.name);
+              setSelectedSubGenre('総合ランキング');
             }}
-            style={{
-              flexShrink: 0,
-              backgroundColor: selectedMain === cat ? '#E60012' : '#ccc',
-              color: '#fff',
-              fontSize: '17px',
-              padding: '10px 16px',
-              borderRadius: '22px',
-              border: 'none',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
+            className={`px-4 py-2 rounded-full text-lg font-semibold ${
+              selectedGenre === g.name
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-200 text-gray-700'
+            }`}
           >
-            {cat}
+            {g.name}
           </button>
         ))}
-      </nav>
+      </div>
 
-      {/* 下段：小ジャンル */}
-      <nav
-        style={{
-          display: 'flex',
-          overflowX: 'auto',
-          gap: '10px',
-          padding: '10px',
-          background: '#fafafa',
-          borderBottom: '1px solid #ddd',
-        }}
-      >
-        {subCategories[selectedMain].map((sub) => (
+      {/* サブカテゴリ */}
+      <div className="flex flex-wrap justify-center gap-3 mb-8">
+        {subGenres[selectedGenre].map((sg) => (
           <button
-            key={sub.name}
-            onClick={() => setSelectedSub(sub)}
-            style={{
-              flexShrink: 0,
-              backgroundColor:
-                selectedSub.name === sub.name ? '#E60012' : '#bbb',
-              color: '#fff',
-              fontSize: '16px',
-              padding: '8px 14px',
-              borderRadius: '20px',
-              border: 'none',
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-            }}
+            key={sg.name}
+            onClick={() => setSelectedSubGenre(sg.name)}
+            className={`px-4 py-2 rounded-full text-md font-semibold ${
+              selectedSubGenre === sg.name
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-100 text-gray-700 border border-gray-300'
+            }`}
           >
-            {sub.name}
+            {sg.name}
           </button>
         ))}
-      </nav>
+      </div>
 
-      {/* 商品リスト */}
-      <main style={{ padding: '20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '18px' }}>
-          📦 {selectedMain} ＞ {selectedSub.name}
-        </p>
+      {/* ランキング表示 */}
+      <h2 className="text-xl font-semibold mb-4 text-center">
+        📦 {selectedGenre} ＞ {selectedSubGenre}
+      </h2>
 
-        {isLoading && <p>読み込み中...</p>}
-        {error && <p>データ取得に失敗しました。</p>}
-        {data && data.Items && data.Items.length > 0 ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: '16px',
-              marginTop: '20px',
-            }}
-          >
-            {data.Items.map((i: any) => (
-              <a
-                key={i.Item.itemCode}
-                href={i.Item.affiliateUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  background: '#fff',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  padding: '10px',
-                  textDecoration: 'none',
-                  color: '#222',
-                }}
-              >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        {items.map((item, index) => {
+          const info = item.Item;
+          return (
+            <a
+              key={index}
+              href={info.itemUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-white rounded-2xl shadow hover:shadow-lg transition p-3 text-center"
+            >
+              {/* 順位バッジ */}
+              <div className="relative mb-2">
+                <div className="absolute top-0 left-0 bg-red-600 text-white font-bold px-2 py-1 rounded-br-lg">
+                  {index + 1}位
+                </div>
                 <img
-                  src={i.Item.mediumImageUrls[0].imageUrl}
-                  alt={i.Item.itemName}
-                  width={160}
-                  height={160}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    borderRadius: '6px',
-                    objectFit: 'cover',
-                  }}
+                  src={info.mediumImageUrls?.[0]?.imageUrl.replace('?ex=128x128', '')}
+                  alt={info.itemName}
+                  className="mx-auto rounded-lg w-full h-40 object-contain"
                 />
-                <h3
-                  style={{
-                    fontSize: '14px',
-                    marginTop: '8px',
-                    height: '3em',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {i.Item.itemName}
-                </h3>
-                <p style={{ color: '#E60012', fontWeight: 'bold' }}>
-                  ¥{i.Item.itemPrice.toLocaleString()}
-                </p>
-              </a>
-            ))}
-          </div>
-        ) : (
-          !isLoading && <p>※データが見つかりません</p>
-        )}
-      </main>
-    </div>
+              </div>
+              <p className="text-sm font-semibold line-clamp-2 min-h-[3em]">{info.itemName}</p>
+              <p className="text-red-600 font-bold text-lg mt-1">
+                ¥{info.itemPrice.toLocaleString()}
+              </p>
+            </a>
+          );
+        })}
+      </div>
+    </main>
   );
 }
